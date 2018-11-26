@@ -164,7 +164,8 @@ module cpu(
    wire 			  id_ex_we;
    wire [1:0] 		  id_ex_optype;
    wire [`OpSelWidth-1:0] id_ex_opsel;
-
+   wire [4:0] 			  id_ex_shamt;
+   
    wire [`RegAddrBus] 	  id_ex_rs1;
    wire 				  id_ex_rs1_e;
    wire [`RegAddrBus] 	  id_ex_rs2;
@@ -192,7 +193,8 @@ module cpu(
 	  .we_o(id_ex_we),
 	  .optype_o(id_ex_optype),
 	  .opsel_o(id_ex_opsel),
-
+	  .shamt_o(id_ex_shamt),
+	  
 	  .rs1_o(id_ex_rs1),
 	  .rs1_e_o(id_ex_rs1_e),
 	  .rs2_o(id_ex_rs2),
@@ -227,7 +229,8 @@ module cpu(
 	  .we_i(id_ex_we),
 	  .optype_i(id_ex_optype),
 	  .opsel_i(id_ex_opsel),
-
+	  .shamt_i(id_ex_shamt),
+	  
 	  .rs1_i(id_ex_rs1),
 	  .rs1_e_i(id_ex_rs1_e),
 	  .rs2_i(id_ex_rs2),

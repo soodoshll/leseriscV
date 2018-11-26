@@ -365,7 +365,7 @@ module pipeline_id
    output reg 					we_o,
    output reg [1:0] 			optype_o,
    output reg [`OpSelWidth-1:0] opsel_o,
-
+   output reg [4:0] 			shamt_o,			
    //To Ex for forwarding
    output reg [`RegAddrBus] 	rs1_o,
    output reg 					rs1_e_o,
@@ -448,6 +448,7 @@ module pipeline_id
 		 we_o <= `Disable;
 		 opsel_o <= 6'b0;
 		 optype_o <= 2'b00;
+		 shamt_o <= 5'b0;
 		 pc_o <= pc_i;
 		 rs1_o <= 5'b0;
 		 rs1_e_o <= `Disable;
@@ -462,6 +463,7 @@ module pipeline_id
 		 we_o <= we_o;
 		 opsel_o <= opsel_o;
 		 optype_o <= optype_o;
+		 shamt_o <= shamt_o;
 		 pc_o <= pc_o;
 		 rs1_o <= rs1_o;
 		 rs1_e_o <= rs1_e_o;
@@ -474,7 +476,8 @@ module pipeline_id
 		 rd_o <= rd;
 		 we_o <= we;
 		 opsel_o <= opsel; 
-		 optype_o <= optype;     
+		 optype_o <= optype;
+		 shamt_o <= shamt;     
 		 pc_o <= pc_i;
 		 rs1_o <= rs1_addr;
 		 rs1_e_o <= re1;

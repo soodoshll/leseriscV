@@ -27,10 +27,11 @@ module memctrl
    output wire [`ByteWidth-1:0] ram_data_o
 );
    localparam 
-	 IDLE = 3'b001,
-	 READING = 3'b010,
-	 WRITING = 3'b100,
-	 BLOWDRY = 3'b000;
+	 IDLE = 4'b0001,
+	 READING = 4'b0010,
+	 GET = 4'b0100,
+	 WRITING = 4'b1000,
+	 BLOWDRY = 4'b0000;
 
    localparam
 	 m_none = 2'b00,
@@ -40,7 +41,7 @@ module memctrl
    
    wire [`MemAddrBus] 		   addr_in = (mem_re_i!=m_none || mem_we_i!=m_none) ? mem_addr_i : if_addr_i;
    
-   reg [2:0] 				   state;				   
+   reg [3:0] 				   state;				   
 
    reg [1:0] 				   deal_cnt;
    
@@ -75,6 +76,7 @@ module memctrl
 		default: ram_wr_o = 1'b0;
 		IDLE:    ram_wr_o = (mem_we_i != m_none)? 1'b1:1'b0; 
 		READING: ram_wr_o = 1'b0;
+		GET:     ram_wr_o = 1'b0;
 		WRITING: ram_wr_o = (write_finish)?1'b0:1'b1;
 	  endcase
    end
@@ -101,25 +103,30 @@ module memctrl
 		   case (state)
 			 IDLE:begin
 				done_o <= 1'b0;
-				addr_buf <= addr_in + 1;
 				//write_finish <= 1'b0;
 				if (mem_we_i != m_none) begin
 				   state <= WRITING;
 				   busy_o <= 1'b1;
 				   deal_cnt <= 0;
 				   we_buf <= mem_we_i;
+				   addr_buf <= addr_in+1;
 				end else if (re != m_none) begin
-				   state <= READING;
+				   state <= GET;
 				   busy_o <= 1'b1;
 				   deal_cnt <= 0;
 				   re_buf <= re;
+				   addr_buf <= addr_in;
 				end else begin
 				   state <= IDLE;
 				   busy_o <= 1'b0;
 				end
 			 end // case: IDLE
-			 
+
 			 READING:begin
+				state <= GET;
+			 end
+			 
+			 GET:begin
 				addr_buf <= addr_buf + 1;
 				deal_cnt <= deal_cnt + 1;
 				if (deal_cnt == 0 && re_buf == m_byte) begin

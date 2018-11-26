@@ -25,6 +25,7 @@ module pipeline_if(
   //From Ex_Mem
   input wire[1:0]     ex_mem_op_i
 
+
   );
 
    reg [4:0] 		  state;
