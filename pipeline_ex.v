@@ -76,6 +76,7 @@ module pipeline_ex
    wire [`DataBus] 				ALU_sll = val1 << val2;
    wire [`DataBus] 				ALU_slli=         val1  <<         shamt_i;
    wire [`DataBus] 				ALU_srli=         val1  >>         shamt_i;
+   wire [`DataBus] 				ALU_sra=  $signed(val1) >>> $signed(val2);   
    wire [`DataBus] 				ALU_srai= $signed(val1) >>>        shamt_i;
    wire [`DataBus] 				ALU_slt = $signed(val1) <  $signed(val2);
    wire [`DataBus] 				ALU_sltu=         val1  <          val2;
@@ -183,7 +184,7 @@ module pipeline_ex
 				`OpAND: wdata_o <= ALU_and;
 				`OpSLL: wdata_o <= (rs2_e_i ? ALU_sll : ALU_slli);
 				`OpSRL: wdata_o <= ALU_srli;
-				`OpSRA: wdata_o <= ALU_srai;
+				`OpSRA: wdata_o <= (rs2_e_i ? ALU_sra : ALU_srai);
 				`OpSLT: wdata_o <= ALU_slt;
 				`OpSLTU:wdata_o <= ALU_sltu;
 				`OpSUB: wdata_o <= ALU_sub;
@@ -312,7 +313,7 @@ module pipeline_ex
 				   last_load <= 1'b0;
 				end
 				`OpSH:begin
-				   $display("save half");
+				   //$display("save half");
 				   rd_o <= 5'b0;
 				   we_o <= 1'b0;
 				   mre_o <= m_none;
