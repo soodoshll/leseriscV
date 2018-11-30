@@ -3,27 +3,28 @@
 //Fetch Instruction
 //Simulation version
 module pipeline_if(
-  input wire clk,
-  input wire rst,
+  input wire 					 clk,
+  input wire 					 rst,
+  input wire 					 rdy,
   input wire [`MemAddrWidth-1:0] pc_i,
-  output reg[`MemAddrWidth-1:0] pc_o,
-  output reg[`InstWidth-1:0] inst_o,
+  output reg [`MemAddrWidth-1:0] pc_o,
+  output reg [`InstWidth-1:0] 	 inst_o,
 
-  input wire[4:0] flush_i,
-  output wire     stall_o,
-  input wire[4:0] stall_i,
+  input wire [4:0] 				 flush_i,
+  output wire 					 stall_o,
+  input wire [4:0] 				 stall_i,
 
   
   //To RAM
-  input wire[`DataBus]    ram_data_i,
-  output wire[`MemAddrBus]  ram_addr_o,
+  input wire [`DataBus] 		 ram_data_i,
+  output wire [`MemAddrBus] 	 ram_addr_o,
 
-  output wire          ram_re_o,
-  input wire          ram_busy_i,
-  input wire          ram_done_i,
+  output wire 					 ram_re_o,
+  input wire 					 ram_busy_i,
+  input wire 					 ram_done_i,
 
   //From Ex_Mem
-  input wire[1:0]     ex_mem_op_i
+  input wire [1:0] 				 ex_mem_op_i
 
   );
 
@@ -58,32 +59,36 @@ module pipeline_if(
 					 (!ram_busy_i) &&
 					 (!ram_done_i || !branch_trig) &&
 					 (state != BRANCH || ex_mem_op_i == `OpTypeBranch);
-   assign stall_o = (ram_busy_i) ||
+   assign stall_o = (state !=IDLE) &&(
+					(ram_busy_i) ||
 					(ram_done_i && branch_trig) || 
-					(state == BRANCH && ex_mem_op_i !=`OpTypeBranch);
+					(state == BRANCH && ex_mem_op_i !=`OpTypeBranch));
 
 
    always @(posedge clk) begin
 	  if (rst) begin
-		 state <= READING;
+		 state <= IDLE;
+		 pc_pending <= `ZeroWord;
 		 pc_o <= `ZeroWord;
 		 inst_o <= `ZeroWord;
-		 reading <= 1'b0;
+		 reading <= 1'b1;
+	  end else if (!rdy) begin
+		 
 	  end else if (stall_i[1]) begin
 		 pc_o <= pc_o;
 		 inst_o <= inst_o;
-		 if (state==READING && ram_done_i) begin
+		 if (state != FINISH && state==READING && ram_done_i) begin
 			state <= FINISH;
 			inst_pending <= ram_data_i;
 		 end
 	  end else begin
 		 case (state)
-		   //IDLE:begin
-		//	  pc_pending <= pc_i;
-		//	  state <= READING;
-		//	  pc_o <= `ZeroWord;
-		//	  inst_o <= `ZeroWord;
-		  // end
+		   IDLE:begin
+			  pc_pending <= pc_i;
+			  state <= READING;
+			  pc_o <= `ZeroWord;
+			  inst_o <= `ZeroWord;
+		   end
 		   READING:begin
 			  if (ram_done_i) begin
 				 if (reading) begin

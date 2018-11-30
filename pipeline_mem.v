@@ -4,7 +4,7 @@ module pipeline_mem
 (
   input wire 				clk,
   input wire 				rst,
-
+  input wire 				rdy,
   input wire [`RegAddrBus] 	rd_i,
   input wire 				we_i,
   input wire [`DataBus] 	wdata_i,
@@ -75,10 +75,12 @@ module pipeline_mem
 		 we_o <= 1'b0;
 		 wdata_o <= `ZeroWord;
 		 state <= IDLE;
-	  end else if (stall_i[4]==`Enable) begin
+	  end else if (!rdy || stall_i[4]==`Enable) begin
+/* -----\/----- EXCLUDED -----\/-----
 		 rd_o <= rd_o;
 		 we_o <= we_o;
 		 wdata_o <= wdata_o;
+ -----/\----- EXCLUDED -----/\----- */
       end else begin
 		 case (state)
 		   IDLE:begin

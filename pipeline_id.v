@@ -244,7 +244,7 @@ module decoder
 			 3'b001:opsel_o = `OpLH;
 			 3'b010:opsel_o = `OpLW;
 			 3'b100:opsel_o = `OpLBU;
-			 3'b100:opsel_o = `OpLHU;
+			 3'b101:opsel_o = `OpLHU;
 			 default:opsel_o = 6'b0;
            endcase
            optype_o = `OpTypeLS;
@@ -345,7 +345,7 @@ module pipeline_id
   (
    input wire 					clk,
    input wire 					rst,
-
+   input wire 					rdy,
    //From If
    input wire [`InstWidth-1:0] 	inst_i,
 
@@ -365,7 +365,7 @@ module pipeline_id
    output reg 					we_o,
    output reg [1:0] 			optype_o,
    output reg [`OpSelWidth-1:0] opsel_o,
-   output reg [4:0] 			shamt_o,			
+   output reg [4:0] 			shamt_o, 
    //To Ex for forwarding
    output reg [`RegAddrBus] 	rs1_o,
    output reg 					rs1_e_o,
@@ -455,7 +455,8 @@ module pipeline_id
 		 rs2_o <= 5'b0;
 		 rs2_e_o <= `Disable;
       
-	  end else if (stall_i[2] ==`Enable) begin
+	  end else if (stall_i[2] ==`Enable || !rdy) begin
+/* -----\/----- EXCLUDED -----\/-----
 		 val1_o <= val1_o;
 		 val2_o <= val2_o;
 		 imm_o <= imm_o;
@@ -469,6 +470,7 @@ module pipeline_id
 		 rs1_e_o <= rs1_e_o;
 		 rs2_o <= rs2_o;
 		 rs2_e_o <= rs2_e_o;
+ -----/\----- EXCLUDED -----/\----- */
       end else begin
 		 val1_o <= (opsel == `OpAUIPC)? pc_i : val1_i;
 		 val2_o <= val2_i;

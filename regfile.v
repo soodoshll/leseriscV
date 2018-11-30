@@ -1,26 +1,26 @@
 `timescale 1ns / 1ps
 `include "define.v"
 module regfile(
-    input wire   clk,
-    input wire   rst,
+    input wire 				 clk,
+    input wire 				 rst,
+	input wire 				 rdy,
+    input wire 				 we,
+    input wire [`RegAddrBus] waddr,
+    input wire [`DataBus] 	 wdata,
 
-    input wire   we,
-    input wire[`RegAddrBus] waddr,
-    input wire[`DataBus]     wdata,
+    input wire 				 re1,
+    input wire [`RegAddrBus] raddr1,
+    output reg [`DataBus] 	 rdata1,
 
-    input wire   re1,
-    input wire[`RegAddrBus] raddr1,
-    output reg[`DataBus]     rdata1,
-
-    input wire   re2,
-    input wire[`RegAddrBus] raddr2,
-    output reg[`DataBus]     rdata2
+    input wire 				 re2,
+    input wire [`RegAddrBus] raddr2,
+    output reg [`DataBus] 	 rdata2
     );
     
     reg[`DataBus] regs[0:`RegSize-1];
 
     always @ (posedge clk) begin
-        if (rst == `Disable) begin
+        if (rst == `Disable && rdy) begin
             if ((we == `Enable) && (waddr != 5'b0)) begin
                 regs[waddr] <= wdata;
             end

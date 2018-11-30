@@ -98,7 +98,9 @@ module cpu(
 
    wire [`InstWidth-1:0]   inst;
    always @(posedge clk) begin
-      if (!rst) begin
+      if (rst) begin
+		 pc <= 0;
+	  end else if (rdy) begin
 		 if (set_pc_e) 
            pc <= set_pc;
 		 else if (stall[0]) 
@@ -106,8 +108,6 @@ module cpu(
 		 else
            pc <= pc+4;
       end
-      else 
-		pc <= 0;
    end
    assign dbgreg_dout  = pc;
    wire [`MemAddrBus] if_id_pc;
@@ -115,6 +115,7 @@ module cpu(
    pipeline_if if0
 	 (.rst(rst),
 	  .clk(clk),
+	  .rdy(rdy),
 	  .pc_i(pc),
 	  .pc_o(if_id_pc),
 	  .inst_o(inst),
@@ -129,7 +130,14 @@ module cpu(
 	  .ram_done_i(memctrl_done),
 	  .ex_mem_op_i(ex_if_op)
 	  );
-   
+/* -----\/----- EXCLUDED -----\/-----
+   ila_1 ila_inst
+	 (.clk(clk),
+	  .probe0(if_id_pc),
+	  .probe1(inst),
+	  .probe2(rdy)
+	  );
+ -----/\----- EXCLUDED -----/\----- */
    wire 			  id_reg_re1;
    wire [`RegAddrBus] id_reg_ra1;
    wire 			  id_reg_re2;
@@ -144,7 +152,8 @@ module cpu(
    regfile reg0(
 				.clk(clk),
 				.rst(rst),
-
+				.rdy(rdy),
+				
 				.we(wb_reg_we),
 				.waddr(wb_reg_rd),
 				.wdata(wb_reg_wdata),
@@ -176,6 +185,8 @@ module cpu(
    pipeline_id id0
 	 (.clk(clk),
 	  .rst(rst),
+	  .rdy(rdy),
+	  
 	  .inst_i(inst),
 	  .stall_i(stall),
 
@@ -220,6 +231,7 @@ module cpu(
    pipeline_ex ex0
 	 (.clk(clk),
 	  .rst(rst),
+	  .rdy(rdy),
 	  .stall_i(stall),
 
 	  .val1_i(id_ex_val1),
@@ -267,6 +279,8 @@ module cpu(
    pipeline_mem mem0
 	 (.clk(clk),
 	  .rst(rst),
+	  .rdy(rdy),
+	  
 	  .stall_i(stall),
 	  .rd_i(ex_mem_rd),
 	  .we_i(ex_mem_we),

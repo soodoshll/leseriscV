@@ -6,6 +6,8 @@ module pipeline_ex
    input wire 					clk,
    input wire 					rst,
 
+   input wire 					rdy,
+   
    input wire [`DataBus] 		val1_i,
    input wire [`DataBus] 		val2_i,
    input wire [`DataBus] 		imm_i,
@@ -101,6 +103,10 @@ module pipeline_ex
 		 set_pc_e_o = 1'b0;
       end else begin
 		 case (opsel_i)
+		   default:begin
+			  set_pc_o = pc_taken;
+			  set_pc_e_o = 1'b0;
+		   end
 		   `OpJAL: begin
 			  set_pc_o = pc_taken;
 			  set_pc_e_o = `Enable;
@@ -151,7 +157,8 @@ module pipeline_ex
 		 mwdata_o <= `ZeroWord;
 		 ma_o <= `ZeroWord;
 		 last_load <= 1'b0;
-      end else if (stall_i[3]==`Enable) begin
+      end else if (!rdy || stall_i[3]==`Enable) begin
+/* -----\/----- EXCLUDED -----\/-----
 		 rd_o <= rd_o;
 		 we_o <= we_o;
 		 wdata_o <= wdata_o;    
@@ -163,6 +170,7 @@ module pipeline_ex
 		 //mrs_o <= mrs_o;
 		 mwdata_o <= mwdata_o;
 		 ma_o <= ma_o;
+ -----/\----- EXCLUDED -----/\----- */
       end else begin
 		 ex_mem_op_o<= optype_i;
 		 case (optype_i)
