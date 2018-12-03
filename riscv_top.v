@@ -21,9 +21,18 @@ reg rst;
 reg rst_delay;
 
 wire clk;
-
+   assign clk=EXCLK;
+/* -----\/----- EXCLUDED -----\/-----
+clk_wiz_0  clk_inst
+	 (
+	  .reset(1'b0),
+	  .clk_in1(EXCLK),
+	  .clk_out1(clk)
+	  );
+ -----/\----- EXCLUDED -----/\----- */
+   
 // assign EXCLK (or your own clock module) to clk
-assign clk = EXCLK;
+//assign clk = EXCLK;
 
 always @(posedge clk or posedge btnC)
 begin

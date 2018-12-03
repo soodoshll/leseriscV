@@ -41,7 +41,7 @@ module memctrl
 	 m_word = 2'b11;
 
    localparam
-	 index_len = 8,
+	 index_len = 7,
 	 inst_addr_len = 17
 	 ;
 
@@ -72,6 +72,8 @@ module memctrl
    assign iaddrb_index = addr_buf[index_len+1:2];
    wire [inst_addr_len - index_len - 3 : 0] iaddrb_tag;
    assign iaddrb_tag = addr_buf[inst_addr_len - 1: index_len + 2];
+
+   reg 										re_from;
    
    wire 									icache_en;
    assign icache_en = (mem_re_i == m_none && mem_we_i == m_none && if_re_i == 1'b1 && if_re_i < 'h20000);
@@ -81,7 +83,7 @@ module memctrl
 
 `ifdef DCACHE
    //********** DCACHE **********
-   reg [`ByteBus] 			   dcache[0:(2**dindex_len)-1];
+   reg [`ByteBus] 							dcache[0:(2**dindex_len)-1];
    reg [d_addr_len - dindex_len - 1 : 0 ] dcache_tag[0:(2**dindex_len)-1];
    reg [(2**dindex_len)-1:0] 			  dcache_val;
    reg [(2**dindex_len)-1:0] 			  dcache_dirty; 			  
@@ -210,6 +212,7 @@ module memctrl
 		   //for (i=0;i!=;i=i+1) begin
 		//	  icache_val[i] = 1'b0;
 		   icache_val <= 0;
+		   re_from <= 0;
 `ifdef DCACHE
 		   dcache_val <= 0;
 		   dcache_dirty <= 0;
@@ -305,7 +308,9 @@ module memctrl
 					  done_o <= 1'b0;
 					  deal_cnt <= 0;
 					  re_buf <= re;
-					  addr_buf <= addr_in;
+					  //addr_buf <= addr_in;
+					  addr_buf <= (mem_re_i == m_none) ? addr_in + 1 : addr_in;
+					  re_from <= (mem_re_i == m_none);
 					end
 				end else begin
 				   state <= IDLE;
@@ -330,7 +335,7 @@ module memctrl
 			 
 			 
 			 GET:begin
-				addr_buf <= addr_buf + 1;
+				addr_buf <= (deal_cnt == 2 && re_from) ? addr_buf : addr_buf + 1;
 				deal_cnt <= deal_cnt + 1;
 `ifdef DCACHE				
 				if (dcache_re_buf && !dcache_dirty[dcache_i[deal_cnt]]) begin
@@ -371,7 +376,8 @@ module memctrl
 				   
 				end else begin
 				   busy_o <= 1'b1;
-				   state <= READING;
+				   //state <= READING;
+				   state <= (re_from) ?  GET : READING;
 //				   state <= GET;
 				   inst_buf[deal_cnt] <= ram_data_i;
 				end
