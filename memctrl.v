@@ -309,8 +309,8 @@ module memctrl
 					  deal_cnt <= 0;
 					  re_buf <= re;
 					  //addr_buf <= addr_in;
-					  addr_buf <= (mem_re_i == m_none) ? addr_in + 1 : addr_in;
-					  re_from <= (mem_re_i == m_none);
+					  addr_buf <= (addr_in < 'h20000) ? addr_in + 1 : addr_in;
+					  re_from <= (addr_in < 'h20000);
 					end
 				end else begin
 				   state <= IDLE;
