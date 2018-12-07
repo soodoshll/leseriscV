@@ -41,7 +41,7 @@ module memctrl
 	 m_word = 2'b11;
 
    localparam
-	 index_len = 7,
+	 index_len = 8,
 	 inst_addr_len = 17
 	 ;
 
