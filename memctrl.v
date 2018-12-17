@@ -1,3 +1,4 @@
+//`define DCACHE
 module memctrl
   (
    input wire 				   clk,
@@ -41,7 +42,7 @@ module memctrl
 	 m_word = 2'b11;
 
    localparam
-	 index_len = 8,
+	 index_len = 7,
 	 inst_addr_len = 17
 	 ;
 
