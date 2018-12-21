@@ -35,18 +35,18 @@ module pipeline_if(
    reg [`MemAddrBus] 	pc_pending;
    wire [`InstWidth-1:0] 	cur_inst;
    reg [`MemAddrBus] 		cur_pc; 		
-   reg 					branch_sent;
+   //reg 					branch_sent;
    //assign cur_inst = branch_sent ? `ZeroWord : rom_data_i;
    wire [6:0] 			opcode = cur_inst[6:0];
    reg 					stall_rom;
-   wire 				branch_trig = (opcode == 7'b1101111 || opcode == 7'b1100111 || opcode == 7'b1100011);
+   //wire 				branch_trig = (opcode == 7'b1101111 || opcode == 7'b1100111 || opcode == 7'b1100011);
    reg 					waiting_branch;
    reg 					reading;
    
    reg [`InstWidth-1:0] inst_buf;
    reg 					stalled;		
    //reg 					reading;					
-   reg 					branch_waiting;					
+   //reg 					branch_waiting;					
    //assign cur_pc = stalled?pc_pending:pc_i;
    localparam
 	 IDLE=5'b00001,
@@ -56,14 +56,11 @@ module pipeline_if(
    assign cur_inst = (state == FINISH) ? inst_pending:ram_data_i;
    assign ram_addr_o = pc_i;
    assign ram_re_o = (!stall_i[1]) &&
-					 (!ram_busy_i) &&
-					 (!ram_done_i || !branch_trig) &&
-					 (state != BRANCH || ex_mem_op_i == `OpTypeBranch);
-   assign stall_o = (state !=IDLE) &&(
-					(ram_busy_i) ||
-					(ram_done_i && branch_trig) || 
-					(state == BRANCH && ex_mem_op_i !=`OpTypeBranch));
+					 (!ram_busy_i) && (!flush_i[1]);
+   assign stall_o = (state !=IDLE) &&
+					(ram_busy_i) ;
 
+   reg 					flushed;
 
    always @(posedge clk) begin
 	  if (rst) begin
@@ -71,54 +68,100 @@ module pipeline_if(
 		 pc_pending <= `ZeroWord;
 		 pc_o <= `ZeroWord;
 		 inst_o <= `ZeroWord;
-		 reading <= 1'b1;
+		 //reading <= 1'b1;
+		 flushed <= 1'b0;
 	  end else if (!rdy) begin
-		 
 	  end else if (stall_i[1]) begin
+		 //if (flush_i[1]) begin
+		//	inst_o <= `ZeroWord;
+		//	flushed <= 1'b1;
+		 //end else begin
+			inst_o <= inst_o;
+		 //end
 		 pc_o <= pc_o;
-		 inst_o <= inst_o;
+		 //inst_o <= inst_o;
 		 if (state != FINISH && state==READING && ram_done_i) begin
 			state <= FINISH;
 			inst_pending <= ram_data_i;
 		 end
+		 //if (flush_i[1]) flushed <= 1'b1;
 	  end else begin
 		 case (state)
 		   IDLE:begin
 			  pc_pending <= pc_i;
-			  state <= READING;
+			  
+state <= READING;
 			  pc_o <= `ZeroWord;
 			  inst_o <= `ZeroWord;
+			  flushed <= 1'b0;
 		   end
 		   READING:begin
+			  
 			  if (ram_done_i) begin
-				 if (reading) begin
-					if (branch_trig) begin
-					   state <= BRANCH;
-					end
+				 //if (reading) begin
+					//if (branch_trig) begin
+					//   state <= BRANCH;
+					//end
+				 if (flush_i[1]) begin
+					//$display("f1");
+					state <= IDLE;
+					pc_o <= `ZeroWord;
+					inst_o <= `ZeroWord;
+					flushed <= 1'b0;
+				 end else if (flushed) begin
+					//$display("f2");
+					pc_o <= pc_pending;
+					inst_o <= `ZeroWord;
+					pc_pending <= pc_i;
+					flushed <= 1'b0;
+				 end else begin
 					pc_pending <= pc_i;
 					pc_o <= pc_pending;
 					inst_o <= ram_data_i;
-				 end else begin
-					reading <= 1'b1;
-					pc_pending <= pc_i;
-					pc_o <= `ZeroWord;
-					inst_o <= `ZeroWord;
-				 end // else: !if(reading)
-			  end else begin
+				 end
+				 //flushed <= 1'b0;
+				 //end else begin
+					//reading <= 1'b1;
+					//pc_pending <= pc_i;
+					//pc_o <= `ZeroWord;
+					//inst_o <= `ZeroWord;
+				 //end // else: !if(reading)
+			  end else begin // if (ram_done_i)
+				 if (flush_i[1]) begin
+					flushed <=1'b1;
+				 end
 				 pc_o <= pc_o;
 				 inst_o <= `ZeroWord;
 			  end
 		   end // case: READING
 		   FINISH:begin
-			  if (branch_trig) begin
-				 state <= BRANCH;
-			  end else begin
+			  //if (branch_trig) begin
+				// state <= BRANCH;
+			  //end else begin
+			  if (flush_i[1]) begin
+				 //$display("f3");
+				 state <= IDLE;
+				 pc_o <= `ZeroWord;
+				 inst_o <= `ZeroWord;
+				 flushed <= 1'b0;
+			  end else if (flushed) begin
+				 //$display("f4");
 				 state <= READING;
-			  end
-			  pc_pending <= pc_i;
-			  pc_o <= pc_pending;
-			  inst_o <= inst_pending;
-		   end
+				 pc_pending <= pc_i;
+				 pc_o <= `ZeroWord;
+				 inst_o <= `ZeroWord;
+				 flushed <= 1'b0;
+			  end else begin
+				 //flushed <= 1'b0;
+				 state <= READING;
+				 pc_pending <= pc_i;
+				 pc_o <= pc_pending;
+				 inst_o <= inst_pending;
+			  end // else: !if(flushed)
+		   end // case: FINISH
+		   
+		 //end
+/* -----\/----- EXCLUDED -----\/-----
 		   BRANCH:begin
 			  pc_o <= pc_o;
 			  inst_o <= `ZeroWord;
@@ -127,6 +170,7 @@ module pipeline_if(
 				 state <= READING;
 			  end
 		   end
+ -----/\----- EXCLUDED -----/\----- */
 		 endcase
 	  end
    end

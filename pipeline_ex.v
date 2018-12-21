@@ -98,7 +98,7 @@ module pipeline_ex
    reg 							last_load;
    assign stall_o = last_load && (val1_f || val2_f);
    always @(*) begin
-      if (rst == `Enable || optype_i != `OpTypeBranch) begin
+      if (rst == `Enable || optype_i != `OpTypeBranch || stall_i[2]) begin
 		 set_pc_o = `ZeroWord;
 		 set_pc_e_o = 1'b0;
       end else begin

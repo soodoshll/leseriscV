@@ -67,7 +67,8 @@ module pipeline_mem
    assign mwe_o = (!mem_busy_i && !finish) ? mwe_i : m_none;
    assign mwdata_o = mwdata_i;
    assign ma_o = ma_i;
-   
+
+   //reg [16:0] 				counter;
    
    always @(posedge clk) begin
       if (rst == `Enable) begin
@@ -75,6 +76,7 @@ module pipeline_mem
 		 we_o <= 1'b0;
 		 wdata_o <= `ZeroWord;
 		 state <= IDLE;
+		 //counter <= 0;
 	  end else if (!rdy || stall_i[4]==`Enable) begin
 /* -----\/----- EXCLUDED -----\/-----
 		 rd_o <= rd_o;
@@ -84,6 +86,8 @@ module pipeline_mem
       end else begin
 		 case (state)
 		   IDLE:begin
+			  //if (we_o) counter = counter + 1;
+
 			  if (mwe_i != m_none) begin
 				 if (mem_busy_i)
 				   state <= WAITING;

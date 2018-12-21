@@ -440,7 +440,7 @@ module pipeline_id
 
    //
    always @(posedge clk) begin
-      if (rst == `Enable || (stall_i[1] == `Enable && stall_i[2]==`Disable)) begin
+      if (rst == `Enable || (stall_i[1] == `Enable && stall_i[2]==`Disable) || !stall_i[2] && flush_i[2]) begin
 		 val1_o <= `ZeroWord;
 		 val2_o <= `ZeroWord;
 		 imm_o <= `ZeroWord;

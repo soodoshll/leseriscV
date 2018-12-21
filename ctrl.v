@@ -18,8 +18,8 @@ module ctrl(
   output reg [4:0] 			stall_o
   );
   
-  //assign flush_o = (set_pc_e_i == `Enable? 5'b00011: 5'b00000);
-  assign flush_o = `Disable;
+  assign flush_o = (set_pc_e_i == `Enable? 5'b00111: 5'b00000);
+  //assign flush_o = `Disable;
   assign set_pc_o = set_pc_i;
   assign set_pc_e_o = set_pc_e_i;
   always @(*) begin

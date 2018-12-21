@@ -42,12 +42,12 @@ module memctrl
 	 m_word = 2'b11;
 
    localparam
-	 index_len = 8,
+	 index_len = 7,
 	 inst_addr_len = 17
 	 ;
 
    localparam
-	 dindex_len = 7,
+	 dindex_len = 5,
 	 d_addr_len = 17;
 
 
@@ -84,7 +84,7 @@ module memctrl
 
 `ifdef DCACHE
    //********** DCACHE **********
-   reg [`ByteBus] 							dcache[0:(2**dindex_len)-1];
+   reg [`ByteBus] 						  dcache[0:(2**dindex_len)-1];
    reg [d_addr_len - dindex_len - 1 : 0 ] dcache_tag[0:(2**dindex_len)-1];
    reg [(2**dindex_len)-1:0] 			  dcache_val;
    reg [(2**dindex_len)-1:0] 			  dcache_dirty; 			  
@@ -228,7 +228,6 @@ module memctrl
 				   dcache_we_buf <= dcache_we;
 				   if (dcache_we) begin
 					  if (dcache_whit) begin
-						 $display("d-cache hit");
 						 state <= IDLE;
 						 busy_o <= 1'b0;
 						 done_o <= 1'b1;
@@ -284,7 +283,6 @@ module memctrl
 				   icache_en_buf <= icache_en;
 `ifdef DCACHE
 				   if (dcache_re && dcache_rhit) begin
-					  $display("dcahche read hit");
 					  state <= IDLE;
 					  busy_o <= 1'b0;
 					  done_o <= 1'b1;

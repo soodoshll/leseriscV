@@ -17,14 +17,17 @@ module regfile(
     output reg [`DataBus] 	 rdata2
     );
     
-    reg[`DataBus] regs[0:`RegSize-1];
-
+   reg [`DataBus] 			 regs[0:`RegSize-1];
+   reg [16:0] 	  cnt;
     always @ (posedge clk) begin
         if (rst == `Disable && rdy) begin
             if ((we == `Enable) && (waddr != 5'b0)) begin
-                regs[waddr] <= wdata;
+               regs[waddr] <= wdata;
+			   cnt <= cnt + 1;
             end
-        end
+        end else begin
+		   cnt <= 0;
+		end
     end 
 
     always @ (*) begin
